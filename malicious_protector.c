@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <sys/user.h>
 #include <sys/reg.h>
@@ -11,8 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
-#define TAB_SIZE 13
 
 static const long	auth_syscall[] =
   {
@@ -30,6 +29,8 @@ static const long	auth_syscall[] =
     243,
     252 
   };
+
+#define TAB_SIZE (sizeof(auth_syscall) / sizeof(*auth_syscall))
 
 static bool	syscall_check(long syscall)
 {
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
 	  wait(&status);
 	  if (WIFEXITED(status) || WIFSIGNALED(status) )
 	    break;
-	  orig_eax = ptrace(PTRACE_PEEKUSER, child, 4 * ORIG_EAX, NULL);
+	  orig_eax = ptrace(PTRACE_PEEKUSER, child, 8 * ORIG_RAX, NULL);
 	  if (syscall_check(orig_eax))
 	    {
 	      printf("program killed %d\n", child);
